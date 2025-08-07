@@ -19,6 +19,7 @@ export const metricsMiddleware = (req:Request, res:Response, next:NextFunction) 
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
+    console.log(`[METRICS] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
     httpRequestDurationMicroseconds
       .labels(req.method, req.route?.path || req.path, res.statusCode.toString())
       .observe(duration);
