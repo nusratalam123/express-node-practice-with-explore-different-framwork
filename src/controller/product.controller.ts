@@ -1,89 +1,51 @@
 // src/controller/product.controller.ts
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Product from '../model/product.model';
-import logger from '../logger';
 
-export const createProduct = async (req: Request, res: Response) => {
+// export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     // Basic validation — trigger alert if missing
+//     if (!req.body.name || req.body.price == null) {
+//       const e: any = new Error('Product name and price are required');
+//       e.statusCode = 400;
+//       return next(e);
+//     }
+
+//     const product = new Product(req.body);
+//     await product.save();
+
+//     return res.status(201).json(product);
+//   } catch (err) {
+//     return next(err);
+//   }
+// };
+export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const product = new Product(req.body);
-    await product.save();
+    if (!req.body.name || req.body.price == null) {
+      const e: any = new Error('Product name and price are required');
+      e.statusCode = 400;
 
-    logger.info('Product created successfully', {
-      route: req.path,
-      method: req.method,
-      body: req.body,
-      status: 201,
-    });
+      //prevent duplicate email in responseWatcher
+      (res as any).locals = (res as any).locals || {};
+      (res as any).locals.errorAlertHandled = true;
 
-    res.status(201).json(product);
-  } catch (err) {
-    logger.error('Error creating product', {
-      route: req.path,
-      method: req.method,
-      error: (err as Error).message,
-      status: 500,
-    });
-
-    res.status(500).json({ message: 'Internal server error', error: err });
-  }
-};
-
-export const getProducts = async (req: Request, res: Response) => {
-  try {
-    const products = await Product.find();
-
-    logger.info('Fetched all products', {
-      route: req.path,
-      method: req.method,
-      count: products.length,
-      status: 200,
-    });
-
-    res.status(200).json(products);
-  } catch (err) {
-    logger.error('Error fetching products', {
-      route: req.path,
-      method: req.method,
-      error: (err as Error).message,
-      status: 500,
-    });
-
-    res.status(500).json({ message: 'Internal server error', error: err });
-  }
-};
-
-export const getProduct = async (req: Request, res: Response) => {
-  try {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      logger.warn('Product not found', {
-        route: req.path,
-        method: req.method,
-        productId: req.params.id,
-        status: 404,
-      });
-
-      return res.status(404).json({ message: 'Product not found' });
+      return next(e);
     }
 
-    logger.info('Fetched single product', {
-      route: req.path,
-      method: req.method,
-      productId: req.params.id,
-      status: 200,
-    });
-
-    res.status(200).json(product);
+    const product = new Product(req.body);
+    await product.save();
+    return res.status(201).json(product);
   } catch (err) {
-    logger.error('Error fetching product', {
-      route: req.path,
-      method: req.method,
-      productId: req.params.id,
-      error: (err as Error).message,
-      status: 500,
-    });
+    return next(err);
+  }
+};
 
-    res.status(500).json({ message: 'Internal server error', error: err });
+
+export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (err) {
+    next(err);
   }
 };
