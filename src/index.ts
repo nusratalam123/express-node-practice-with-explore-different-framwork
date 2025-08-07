@@ -6,6 +6,9 @@ import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './swagger/swaggerOptions';
 import metricsApp, { metricsMiddleware } from './metrics'; 
 import logger from './logger';
+import { responseWatcher } from './middleware/responseWatcher';
+import { errorHandler } from './middleware/errorHandler';
+import { loggingMiddleware } from './middleware/loggingMiddleware';
 
 dotenv.config();
 const app = express();
@@ -22,11 +25,19 @@ connectDB();
 // Use Prometheus metrics middleware
 app.use(metricsMiddleware); 
 
+app.use(loggingMiddleware);
+
+// Watch POST responses for non-thrown errors
+app.use(responseWatcher);
 
 app.use('/products', productRoutes);
 
 // Mount /metrics endpoint separately
-app.use(metricsApp); 
+// app.use(metricsApp); 
+
+// Error handler (last)
+app.use(errorHandler);
+
 
 app.listen(PORT, () => {
   logger.info(`Server started on port ${PORT}`);
