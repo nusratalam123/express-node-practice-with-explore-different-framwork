@@ -19,13 +19,17 @@ import Product from '../model/product.model';
 //     return next(err);
 //   }
 // };
-export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const createProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     if (!req.body.name || req.body.price == null) {
       const e: any = new Error('Product name and price are required');
       e.statusCode = 400;
 
-      //prevent duplicate email in responseWatcher
+      // prevent duplicate error alert in responseWatcher
       (res as any).locals = (res as any).locals || {};
       (res as any).locals.errorAlertHandled = true;
 
@@ -34,11 +38,13 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 
     const product = new Product(req.body);
     await product.save();
-    return res.status(201).json(product);
+
+    res.status(201).json(product); // 👈 No return
   } catch (err) {
-    return next(err);
+    next(err); // 👈 No return
   }
 };
+
 
 
 export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
