@@ -33,7 +33,7 @@ app.use(responseWatcher);
 app.use('/products', productRoutes);
 
 // Mount /metrics endpoint separately
-// app.use(metricsApp); 
+app.use(metricsApp); 
 
 // Error handler (last)
 app.use(errorHandler);
